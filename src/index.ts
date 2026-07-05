@@ -7,7 +7,7 @@ import budgetRoutes from "./routes/budgets";
 import transactionRoutes from "./routes/transactions";
 import aiRoutes from "./routes/ai";
 import subscriptionRoutes from "./routes/subscriptions";
-import { runDailyJobs, scheduleDailyJobs } from "./jobs/scheduler";
+import internalRoutes from "./routes/internal";
 
 const app = express();
 
@@ -25,15 +25,14 @@ app.use("/api/budgets", budgetRoutes);
 app.use("/api/transactions", transactionRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
+app.use("/api/internal", internalRoutes);
 
 const PORT = Number(process.env.PORT) || 5000;
 
 connectDB()
-  .then(async () => {
-    // Catch up recurring budgets + subscription charges missed while down, then schedule daily.
-    await runDailyJobs().catch((e) => console.error("[scheduler] boot error:", e));
-    scheduleDailyJobs();
-
+  .then(() => {
+    // Scheduled work (recurring budgets + subscription charges) is driven
+    // externally via POST /api/internal/run-jobs — nothing is scheduled in-process.
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch((err) => {

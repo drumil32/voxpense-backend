@@ -58,8 +58,20 @@ Send `Authorization: Bearer <token>` on all non-auth routes.
 | PATCH | `/api/subscriptions/:id` | Edit a subscription |
 | POST | `/api/subscriptions/:id/cancel` | Cancel (keeps past charges) |
 
+### Internal (scheduler) — not user-auth
+| Method | Route | Auth | Purpose |
+|--------|-------|------|---------|
+| POST | `/api/internal/run-jobs` | `x-cron-secret` header | Roll recurring budgets forward + generate due subscription charges |
+
+Example:
+```bash
+curl -X POST https://<api-host>/api/internal/run-jobs \
+  -H "x-cron-secret: $CRON_SECRET"
+# → { "success": true, "budgetsCreated": 2, "chargesCreated": 5 }
+```
+
 ## Background jobs
-A daily `node-cron` job (plus a boot catch-up) rolls recurring budgets forward and generates due subscription charges into the right budget period. See [`TODO.md`](./TODO.md) for the plan to move scheduling to a separate service.
+The scheduled work is `runDailyJobs()` — it rolls recurring budgets forward, then generates due subscription charges into the right budget period. This app does **not** schedule anything itself; a **separate scheduler server** is expected to call `POST /api/internal/run-jobs` (with the `x-cron-secret` header) on a cadence (e.g. daily). The job is idempotent, so extra calls are safe.
 
 ## Project structure
 ```
