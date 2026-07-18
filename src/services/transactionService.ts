@@ -88,10 +88,16 @@ export async function addTransaction(
     subscriptionId: meta?.subscriptionId,
   });
 
-  budget.spent += input.amount;
-  await budget.save();
+  // $inc is atomic: the agent runs one add_transaction tool call per expense
+  // and the SDK may execute them concurrently, so a read-modify-write here
+  // loses updates.
+  const updated = await Budget.findOneAndUpdate(
+    { _id: budget._id },
+    { $inc: { spent: input.amount } },
+    { new: true }
+  );
 
-  return { txn, budget };
+  return { txn, budget: updated ?? budget };
 }
 
 export async function updateTransaction(
