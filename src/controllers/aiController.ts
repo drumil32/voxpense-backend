@@ -8,7 +8,8 @@ import { runAgent, agentResultSchema } from "../ai/agent";
 const TRANSCRIBE_MODEL = "gpt-4o-mini-transcribe";
 
 // Shared: turn an uploaded audio buffer into text via OpenAI.
-async function transcribeBuffer(file: Express.Multer.File): Promise<string> {
+// Also used by the feedback controller for optional voice feedback notes.
+export async function transcribeBuffer(file: Express.Multer.File): Promise<string> {
   const openai = getOpenAI();
   const filename = file.originalname || "audio.webm";
   const audioFile = await toFile(file.buffer, filename, { type: file.mimetype });

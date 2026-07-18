@@ -8,6 +8,7 @@ import transactionRoutes from "./routes/transactions";
 import aiRoutes from "./routes/ai";
 import subscriptionRoutes from "./routes/subscriptions";
 import internalRoutes from "./routes/internal";
+import feedbackRoutes from "./routes/feedback";
 
 const app = express();
 
@@ -26,6 +27,7 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/ai", aiRoutes);
 app.use("/api/subscriptions", subscriptionRoutes);
 app.use("/api/internal", internalRoutes);
+app.use("/api/feedback", feedbackRoutes);
 
 const PORT = Number(process.env.PORT) || 5000;
 
